@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package sustainableCities;
+
+option java_package = "com.generated.sustainableCities";
+option java_multiple_files = true;
+
+// EmergencyService provides gRPC methods to manage emergencies
+service EmergencyService {
+
+  // 1. Unary gRPC for reporting a new accident with details
+  rpc ReportAccident(AccidentRequest) returns (AccidentResponse);
+
+  // 2. Server streaming gRPC to notify subscribed emergency services about relevant incidents
+  rpc NotifyServices(ServiceSubscriptionRequest) returns (stream EmergencyNotification);
+
+  // 3. Client streaming gRPC for ambulances to upload continuous patient data during transport
+  rpc UploadPatientData(stream PatientData) returns (PatientReport);
+
+  // 4. Bidirectional streaming gRPC for real-time route optimization and ambulance status updates
+  rpc RouteOptimization(stream AmbulanceStatus) returns (stream RouteUpdate);
+}
+
+// 1. Unary
+// Request message to report an accident
+message AccidentRequest {
+  string location = 1; // Location of the accident
+  string description = 2; // Description of the accident
+  int32 timestamp = 3; // Timestamp of the accident
+  string accidentType = 4; // Type of accident (Traffic Accidents, Fires, Floods, Hurricanes, Medical Emergencies, Chemical spills, Radiation leaks
+  int32 severity = 5; // Severity level
+}
+
+// Response message after accident report
+message AccidentResponse {
+  string accidentId = 1; // Unique ID generated for the accident
+  string message = 2; // Information about the accident
+}
+
+// 2. Server stream
+// Request message for emergency services to subscribe to incident notifications
+message ServiceSubscriptionRequest {
+  string serviceType = 1; // Type of emergency service (FireDepartment, Ambulance, Police)
+  string teamID = 2; // Number of the team that will be assigned
+}
+
+// Notification messages sent to subscribed emergency services
+message EmergencyNotification {
+  string accidentId = 1; // Associated accident ID
+  string location = 2; // Incident location
+  string accidentType = 3; // Type of accident
+  int32 severity = 4; // Severity level
+  string description = 5;  // Incident description
+}
+
+// 3. Client stream
+// Patient data streamed from ambulance to hospital
+message PatientData {
+  string patientId = 1; // Unique patient ID
+  double heartRate = 2; // Heart rate in BPM
+  double bloodPressure = 3; // Blood pressure data
+  double oxygenSaturation = 4; // Oxygen info
+  string additionalNotes = 5; // Any extra info from the ambulance
+}
+
+// Report after patient's data upload
+message PatientReport {
+  string report = 1; // Report message
+}
+
+// 4. Bidirectional stream
+// Information from the ambulance for route optimization
+message AmbulanceStatus {
+  string ambulanceId = 1; // Unique ambulance ID
+  string location = 2; // Current location
+  string patientCondition = 3; // Brief condition summary (stable, critical)
+  int32 timestamp = 4; // Time of status update
+}
+
+// Route update messages that are sent back to the ambulance
+message RouteUpdate {
+  string newRouteInstructions = 1; // Text directions or encoded route data
+  string estimatedArrivalTime = 2; // ETA to hospital
+  string alternateHospital = 3; // Optional alternate hospital name
+  int32 timestamp = 4; // Time route update sent
+}
